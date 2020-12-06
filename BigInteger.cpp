@@ -14,7 +14,7 @@ BigInteger::BigInteger(long long other) : sign(other >= 0){
 	std::reverse(digits.begin(), digits.end());
 }
 BigInteger::BigInteger(const std::string& other) : sign(other[0] == '-'){
-	std::for_each(other.begin(), other.end(), [&](char digit){digits.push_back(digit - '0');});
+	std::for_each(other.begin() + sign, other.end(), [&](char digit){digits.push_back(digit - '0');});
 	std::reverse(digits.begin(), digits.end());
 }
 
