@@ -18,7 +18,6 @@ BigInteger::BigInteger(long long other) : sign(other < 0){
 }
 BigInteger::BigInteger(const std::string& other) : sign(other[0] == '-'){
 	std::for_each(other.begin() + sign, other.end(), [&](char digit){digits.push_back(digit - '0');});
-	std::reverse(digits.begin(), digits.end());
 }
 
 BigInteger::BigInteger(const BigInteger& other): digits(other.digits), sign(other.sign){
@@ -47,3 +46,32 @@ std::string BigInteger::to_string() const
 	result << digits.back();
 	return result.str();
 }
+
+BigInteger& BigInteger::operator++()
+{
+  *this += 1;
+  return *this;
+}
+BigInteger& BigInteger::operator--()
+{
+  *this -= 1;
+  return *this;
+}
+BigInteger BigInteger::operator++(int)
+{
+  BigInteger previous(*this);
+  *this += 1;
+  return previous;
+}
+BigInteger BigInteger::operator--(int)
+{
+  BigInteger previous(*this);
+  *this -= 1;
+  return previous;
+}
+void BigInteger::operator+=(const BigInteger& other)
+{
+
+}
+
+static BigInteger* sum()

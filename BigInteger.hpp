@@ -30,6 +30,18 @@ public:
 	const BigInteger operator * (const BigInteger& other);
 	const BigInteger operator / (const BigInteger& other);
 
+  // Prefix increment and decrement
+ BigInteger& operator ++();
+ BigInteger& operator --();
+ // Postfix increment and decrement
+ BigInteger operator ++(int);
+ BigInteger operator --(int);
+  
+  
+  
+  
+
+
 	// Compare operators
 	bool operator <  (const BigInteger& other);
 	bool operator >  (const BigInteger& other);
