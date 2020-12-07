@@ -2,7 +2,7 @@
 #include <string>
 class BigInteger
 {
-	// digits storage
+	// digits storage in reversed order
 	std::vector<short> digits;
 	// if number is negative, sign is true, otherwise sign is false
 	bool sign;
@@ -25,30 +25,34 @@ public:
 	void operator *= (const BigInteger& other);
 	void operator /= (const BigInteger& other);
 	
-	const BigInteger operator + (const BigInteger& other);
-	const BigInteger operator - (const BigInteger& other);
-	const BigInteger operator * (const BigInteger& other);
-	const BigInteger operator / (const BigInteger& other);
+	const BigInteger operator + (const BigInteger& other) const;
+	const BigInteger operator - (const BigInteger& other) const;
+	const BigInteger operator * (const BigInteger& other) const;
+	const BigInteger operator / (const BigInteger& other) const;
 
   // Prefix increment and decrement
- BigInteger& operator ++();
- BigInteger& operator --();
- // Postfix increment and decrement
- BigInteger operator ++(int);
- BigInteger operator --(int);
-  
-  
-  
-  
-
+	BigInteger& operator ++();
+	BigInteger& operator --();
+	// Postfix increment and decrement
+	const BigInteger operator ++(int);
+	const BigInteger operator --(int);
 
 	// Compare operators
-	bool operator <  (const BigInteger& other);
-	bool operator >  (const BigInteger& other);
-	bool operator == (const BigInteger& other);
-	bool operator >= (const BigInteger& other);
-	bool operator <= (const BigInteger& other);
+	const bool operator <  (const BigInteger& other) const;
+	const bool operator >  (const BigInteger& other) const;
+	const bool operator == (const BigInteger& other) const;
+	const bool operator >= (const BigInteger& other) const;
+	const bool operator <= (const BigInteger& other) const;
+	
 
 	// Utilities
-	std::string to_string() const;
+	const std::string to_string() const;
+	const std::size_t size() const;
+private:
+	//Service methods
+ 	static void add_second_to_first(BigInteger& first, const BigInteger& second);
+ 	static void substract_second_from_first(BigInteger& first, const BigInteger& second);
+	static bool compare_two_numbers(const std::vector<short>& first, const std::vector<short>& second);
+	static bool compare_signs(const BigInteger& first, const BigInteger& second);
 };
+
