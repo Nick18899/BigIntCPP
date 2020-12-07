@@ -2,7 +2,9 @@
 #include <string>
 class BigInteger
 {
+	// digits storage
 	std::vector<short> digits;
+	// if number is negative, sign is true, otherwise sign is false
 	bool sign;
 
 public:
@@ -34,4 +36,7 @@ public:
 	bool operator == (const BigInteger& other);
 	bool operator >= (const BigInteger& other);
 	bool operator <= (const BigInteger& other);
+
+	// Utilities
+	std::string to_string() const;
 };

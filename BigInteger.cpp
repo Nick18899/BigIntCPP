@@ -1,12 +1,15 @@
 #include <iostream>
+#include <iterator>
+#include <sstream>
 #include <string>
 #include <algorithm>
 #include "BigInteger.hpp"
 
-BigInteger::BigInteger() : digits(), sign(true){
+BigInteger::BigInteger() : digits(), sign(false){
 
 }
-BigInteger::BigInteger(long long other) : sign(other >= 0){
+BigInteger::BigInteger(long long other) : sign(other < 0){
+	if (sign) other *= -1;
 	while (other){
 		digits.push_back(other % 10);
 		other /= 10;
@@ -30,3 +33,17 @@ BigInteger::~BigInteger(){
 
 }
 
+
+std::string BigInteger::to_string() const 
+{
+	std::ostringstream result;
+	if (sign){
+		result << '-';
+	}
+	if(!digits.empty())
+	{
+		std::copy(digits.begin(), digits.end() - 1, std::ostream_iterator<short>(result, ""));
+	}
+	result << digits.back();
+	return result.str();
+}
