@@ -25,10 +25,10 @@ public:
 	void operator *= (const BigInteger& other);
 	void operator /= (const BigInteger& other);
 	
-	const BigInteger operator + (const BigInteger& other) const;
-	const BigInteger operator - (const BigInteger& other) const;
-	const BigInteger operator * (const BigInteger& other) const;
-	const BigInteger operator / (const BigInteger& other) const;
+    BigInteger operator + (const BigInteger& other) const;
+    BigInteger operator - (const BigInteger& other) const;
+    BigInteger operator * (const BigInteger& other) const;
+    BigInteger operator / (const BigInteger& other) const;
 
   // Prefix increment and decrement
 	BigInteger& operator ++();

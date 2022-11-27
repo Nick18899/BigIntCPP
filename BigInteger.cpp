@@ -3,6 +3,10 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <vector>
+#include "math.h"
+#include "complex"
+typedef std::complex<double> base;
 #include "BigInteger.hpp"
 
 /*field:
@@ -64,9 +68,88 @@ const std::string BigInteger::to_string() const
   return result_string;
 }
 
+void FourierFastTransform (std::vector<base>& vec, bool inverted) { // required check out
+  int n = static_cast<int>(vec.size());
+  if (n == 1) {
+    return;
+  }
+  std::vector<base> vec1(n/2);
+  std::vector<base> vec2(n/2);
+  for (int i = 0, j = 0; i < n; i += 2, ++j) {
+    vec1[j] = vec[i];
+    vec1[j] = vec[i + 1];
+  }
+  double ang = 2*M_PI/n * (inverted ? -1 : 1);
+  base w(1);
+  base wn(std::cos(ang), std::sin(ang));
+  for (int  i = 0; i < n/2; ++i) {
+    vec[i] = vec1[i] + w * vec2[i];
+    vec[i + n/2] = vec1[i] - w * vec2[i];
+    if (inverted) {
+      vec[i] /= 2;
+      vec[i + n/2] /= 2;
+    }
+    w *= wn;
+  }
+}
+
+void multiply (std::vector<short> vec1, std::vector<short> vec2, std::vector<short>& result) {
+  reverse(vec1.begin(), vec1.end());
+  reverse(vec2.begin(), vec2.end());
+  std::vector<base> four_vec1 (vec1.begin(), vec1.end());
+  std::vector<base> four_vec2 (vec2.begin(), vec2.end());
+  size_t n = 1;
+  while (n < std::max (vec1.size(), vec2.size())) {
+    n <<= 1;
+  }
+  n <<= 1;
+  four_vec1.resize(n);
+  four_vec2.resize(n);
+  FourierFastTransform(four_vec1, false);
+  FourierFastTransform(four_vec2, false);
+  for (size_t i = 0; i < n; ++i) {
+    four_vec1[i] *= four_vec2[i];
+  }
+  FourierFastTransform(four_vec1, true);
+  result.resize(n);
+  for (size_t i = 0; i < n; ++i) {
+    result[i] = static_cast<short>(four_vec1[i].real() + 0.5);
+  }
+}
+
 const std::size_t BigInteger::size() const
 {
   return digits.size();
+}
+
+void BigInteger::operator*=(const BigInteger &other) {
+  std::vector<short> result;
+  multiply(this->digits, other.digits, result);
+  this->digits = result;
+}
+
+BigInteger BigInteger::operator*(const BigInteger &other) const {
+  BigInteger cp (*this);
+  cp *= other;
+  return cp;
+}
+
+BigInteger BigInteger::operator+(const BigInteger &other) const {
+  BigInteger cp(*this);
+  cp += other;
+  return cp;
+}
+
+BigInteger BigInteger::operator-(const BigInteger &other) const {
+  BigInteger cp(*this);
+  cp -= other;
+  return cp;
+}
+
+void BigInteger::operator-=(const BigInteger &other) {
+  BigInteger cp(other);
+  cp.sign = !(other.sign);
+  *this += cp;
 }
 
 void BigInteger::operator+=(const BigInteger& other)
@@ -86,7 +169,28 @@ void BigInteger::operator+=(const BigInteger& other)
   } 
   else
   {
-    
+    if (!(this->sign)) {
+      if (other.size() > this->size()) {
+        BigInteger cp(*this);
+        *this = other;
+        substract_second_from_first(*this, cp);
+        this->sign = true;
+      }
+      else {
+        substract_second_from_first(*this, other);
+      }
+    }
+    else {
+      if (other.size() > this->size()) {
+        BigInteger cp(*this);
+        *this = other;
+        substract_second_from_first(*this, cp);
+        this->sign = true;
+      }
+      else {
+        substract_second_from_first(*this, other);
+      }
+    }
   }
 }
 
@@ -236,3 +340,5 @@ void BigInteger::operator+=(const BigInteger& other)
 
 }
 */
+
+// check what is wrong with this shit
