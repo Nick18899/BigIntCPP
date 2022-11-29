@@ -29,6 +29,7 @@ public:
     BigInteger operator - (const BigInteger& other) const;
     BigInteger operator * (const BigInteger& other) const;
     BigInteger operator / (const BigInteger& other) const;
+    BigInteger operator % (const BigInteger& other) const;
 
   // Prefix increment and decrement
 	BigInteger& operator ++();
@@ -36,18 +37,21 @@ public:
 	// Postfix increment and decrement
 	const BigInteger operator ++(int);
 	const BigInteger operator --(int);
+    // unar -
+    BigInteger operator -() const;
 
 	// Compare operators
 	const bool operator <  (const BigInteger& other) const;
 	const bool operator >  (const BigInteger& other) const;
 	const bool operator == (const BigInteger& other) const;
-	const bool operator >= (const BigInteger& other) const;
-	const bool operator <= (const BigInteger& other) const;
+	bool operator >= (const BigInteger& other) const;
+	bool operator <= (const BigInteger& other) const;
+    operator bool() const;
 	
 
 	// Utilities
-	const std::string to_string() const;
-	const std::size_t size() const;
+	std::string to_string() const;
+	std::size_t size() const;
 private:
 	//Service methods
  	static void add_second_to_first(BigInteger& first, const BigInteger& second);

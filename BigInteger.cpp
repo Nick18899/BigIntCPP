@@ -1,10 +1,11 @@
+#pragma once
 #include <iostream>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <algorithm>
 #include <vector>
-#include "math.h"
+#include <cmath>
 #include "complex"
 typedef std::complex<double> base;
 #include "BigInteger.hpp"
@@ -19,7 +20,7 @@ BigInteger::BigInteger() : digits({0}), sign(false)
 
 }
 
-BigInteger::BigInteger(long long other) : sign(other < 0)
+BigInteger::BigInteger(long long other) : sign(other < 0) // rewrite for int
 {
 	if (sign) other *= -1;
 	while (other)
@@ -29,11 +30,17 @@ BigInteger::BigInteger(long long other) : sign(other < 0)
 	}
 }
 
+BigInteger BigInteger::operator-() const {
+  BigInteger cp (*this);
+  cp.sign = !(cp.sign);
+  return cp;
+}
+
 BigInteger::BigInteger(const std::string& other) : sign(other[0] == '-')
 {
 	std::for_each(other.begin() + (sign ? 1 : 0), other.end(), [&](char digit) //lambda foreach is used here
   {
-    digits.push_back(digit - '0');
+    digits.push_back(static_cast<short>(digit) - '0');
   });
   std::reverse(digits.begin(), digits.end());
 }
@@ -53,7 +60,7 @@ BigInteger::~BigInteger()
 
 }
 
-const std::string BigInteger::to_string() const 
+std::string BigInteger::to_string() const
 {
 	std::ostringstream result;
 	if(!digits.empty())
@@ -77,8 +84,10 @@ void FourierFastTransform (std::vector<base>& vec, bool inverted) { // required 
   std::vector<base> vec2(n/2);
   for (int i = 0, j = 0; i < n; i += 2, ++j) {
     vec1[j] = vec[i];
-    vec1[j] = vec[i + 1];
+    vec2[j] = vec[i + 1];
   }
+  FourierFastTransform(vec1, inverted);
+  FourierFastTransform(vec2, inverted);
   double ang = 2*M_PI/n * (inverted ? -1 : 1);
   base w(1);
   base wn(std::cos(ang), std::sin(ang));
@@ -93,9 +102,9 @@ void FourierFastTransform (std::vector<base>& vec, bool inverted) { // required 
   }
 }
 
-void multiply (std::vector<short> vec1, std::vector<short> vec2, std::vector<short>& result) {
-  reverse(vec1.begin(), vec1.end());
-  reverse(vec2.begin(), vec2.end());
+void multiply (const std::vector<short> & vec1, const std::vector<short>& vec2, std::vector<short>& result) {
+  //reverse(vec1.begin(), vec1.end());
+  //reverse(vec2.begin(), vec2.end());
   std::vector<base> four_vec1 (vec1.begin(), vec1.end());
   std::vector<base> four_vec2 (vec2.begin(), vec2.end());
   size_t n = 1;
@@ -113,11 +122,20 @@ void multiply (std::vector<short> vec1, std::vector<short> vec2, std::vector<sho
   FourierFastTransform(four_vec1, true);
   result.resize(n);
   for (size_t i = 0; i < n; ++i) {
-    result[i] = static_cast<short>(four_vec1[i].real() + 0.5);
+    result[i] = int(four_vec1[i].real() + 0.5);
+  }
+  int c = 0;
+  for (size_t i = 0; i < n; ++i) {
+    result[i] += c;
+    c = result[i]  /10;
+    result[i] %=10;
+  }
+  for (int i =0; i < result.size(); ++i) {
+    std::cout << result[i] << " ";
   }
 }
 
-const std::size_t BigInteger::size() const
+std::size_t BigInteger::size() const
 {
   return digits.size();
 }
@@ -132,6 +150,30 @@ BigInteger BigInteger::operator*(const BigInteger &other) const {
   BigInteger cp (*this);
   cp *= other;
   return cp;
+}
+
+BigInteger BigInteger::operator/(const BigInteger &other) const { // дописать
+  /*if (other == BigInteger(0)) {
+    return BigInteger(0);
+  }
+  if (this->sign && !other.sign) {
+    return BigInteger(-1)*(*this / (BigInteger(-1)*other));
+  }
+  if (!this->sign && !other.sign) {
+    return (BigInteger(-1)*(*this)) / (BigInteger(-1)*other);
+  }
+  if (other > *this) {
+    return BigInteger("0");
+  }*/
+  return BigInteger("0");
+}
+
+BigInteger BigInteger::operator%(const BigInteger &other) const {
+  BigInteger res = *this - (*this / other) * (*this);
+  if (res.sign) {
+    res += other;
+  }
+  return res;
 }
 
 BigInteger BigInteger::operator+(const BigInteger &other) const {
@@ -169,8 +211,11 @@ void BigInteger::operator+=(const BigInteger& other)
   } 
   else
   {
+    if (*this == -other) {
+      *this = BigInteger(0);
+    }
     if (!(this->sign)) {
-      if (other.size() > this->size()) {
+      if (other.size() > this->size() && *this > -other) {
         BigInteger cp(*this);
         *this = other;
         substract_second_from_first(*this, cp);
@@ -181,7 +226,7 @@ void BigInteger::operator+=(const BigInteger& other)
       }
     }
     else {
-      if (other.size() > this->size()) {
+      if (other.size() > this->size() && -(*this) > other) {
         BigInteger cp(*this);
         *this = other;
         substract_second_from_first(*this, cp);
@@ -196,8 +241,9 @@ void BigInteger::operator+=(const BigInteger& other)
 
 const BigInteger& BigInteger::operator=(const BigInteger& other)
 {
-  digits = other.digits;
-  sign = other.sign;
+  this->digits = other.digits;
+  this->sign = other.sign;
+  return *this;
 }
 
 bool BigInteger::compare_two_numbers(const std::vector<short>& first, const std::vector<short>& second)
@@ -223,9 +269,13 @@ bool BigInteger::compare_two_numbers(const std::vector<short>& first, const std:
   }
 }
 
-const bool BigInteger::operator>= (const BigInteger& other) const
+bool BigInteger::operator>= (const BigInteger& other) const //maybe cringe
 {
   return !(*this >other); 
+}
+
+bool BigInteger::operator<=(const BigInteger &other) const { // also
+  return !(*this < other);
 }
 
 
@@ -246,6 +296,7 @@ const bool BigInteger::operator> (const BigInteger& other) const
 {
   return (other < *this);
 }
+
 bool BigInteger::compare_signs(const BigInteger& first, const BigInteger& second)
 {
   if (first.sign < second.sign)
@@ -256,7 +307,9 @@ bool BigInteger::compare_signs(const BigInteger& first, const BigInteger& second
   {
    return false; 
   }
+  return true;
 }
+
 const bool BigInteger::operator<(const BigInteger& other) const //false == 1; true == -1
 {
   if (sign != other.sign)
@@ -317,28 +370,22 @@ void BigInteger::substract_second_from_first(BigInteger& first, const BigInteger
     first.digits.pop_back();
   }
 }
-/* 
+
 BigInteger& BigInteger::operator--()
 {
   *this -= 1;
   return *this;
 }
-BigInteger BigInteger::operator++(int)
+const BigInteger BigInteger::operator++(int)
 {
   BigInteger previous(*this);
   *this += 1;
   return previous;
 }
-BigInteger BigInteger::operator--(int)
+const BigInteger BigInteger::operator--(int)
 {
   BigInteger previous(*this);
   *this -= 1;
   return previous;
 }
-void BigInteger::operator+=(const BigInteger& other)
-{
-
-}
-*/
-
 // check what is wrong with this shit
