@@ -130,9 +130,17 @@ void multiply (const std::vector<short> & vec1, const std::vector<short>& vec2, 
     c = result[i]  /10;
     result[i] %=10;
   }
-  for (int i =0; i < result.size(); ++i) {
-    std::cout << result[i] << " ";
+  size_t i = result.size() - 1;
+  while (result[i] == 0) {
+    if (result.size() == 1) {
+      break;
+    }
+    result.pop_back();
+    --i;
   }
+  /*for (int i =0; i < result.size(); ++i) {
+    std::cout << result[i] << " ";
+  }*/
 }
 
 std::size_t BigInteger::size() const
@@ -144,6 +152,12 @@ void BigInteger::operator*=(const BigInteger &other) {
   std::vector<short> result;
   multiply(this->digits, other.digits, result);
   this->digits = result;
+  if (this->sign != other.sign) {
+    this->sign = true;
+  }
+  else {
+    this->sign = false;
+  }
 }
 
 BigInteger BigInteger::operator*(const BigInteger &other) const {
@@ -188,6 +202,10 @@ BigInteger BigInteger::operator-(const BigInteger &other) const {
   return cp;
 }
 
+BigInteger::operator bool() const {
+  return !(*this == BigInteger("0"));
+}
+
 void BigInteger::operator-=(const BigInteger &other) {
   BigInteger cp(other);
   cp.sign = !(other.sign);
@@ -208,16 +226,25 @@ void BigInteger::operator+=(const BigInteger& other)
     {
       add_second_to_first(*this, other);
     }   
-  } 
+  }
   else
   {
     if (*this == -other) {
       *this = BigInteger(0);
+      return;
     }
     if (!(this->sign)) {
-      if (other.size() > this->size() && *this > -other) {
+      if (other.size() > this->size() || *this < -other) {
         BigInteger cp(*this);
         *this = other;
+        for (int i = 0; i< cp.digits.size(); ++i) {
+          std::cout << cp.digits[i] << " ";
+        }
+        std::cout << "\n";
+        for (int i = 0; i< this->digits.size(); ++i) {
+          std::cout << this->digits[i] << " ";
+        }
+        std::cout << std::endl;
         substract_second_from_first(*this, cp);
         this->sign = true;
       }
@@ -226,11 +253,11 @@ void BigInteger::operator+=(const BigInteger& other)
       }
     }
     else {
-      if (other.size() > this->size() && -(*this) > other) {
+      if (other.size() > this->size() || (*this) < -other) {
         BigInteger cp(*this);
         *this = other;
         substract_second_from_first(*this, cp);
-        this->sign = true;
+        this->sign = false;
       }
       else {
         substract_second_from_first(*this, other);
@@ -357,12 +384,33 @@ void BigInteger::add_second_to_first(BigInteger& first, const BigInteger& second
 void BigInteger::substract_second_from_first(BigInteger& first, const BigInteger& second)
 {
   short buff = 0;
+  bool flag = false;
   for(int i = 0; i < second.size(); ++i)
   {
-    first.digits[i] -= second.digits[i] + buff;
+    flag = false;
+    first.digits[i] -= (second.digits[i] + buff);
     if (first.digits[i] < 0){
       buff = first.digits[i] < 0 ? 1 : 0;
       first.digits[i] += 10;
+      flag = true;
+    }
+    if (second.size() < first.size() && (i == second.size() - 1) && flag) {
+      ++i;
+      if (first.digits[i] != 0) {
+        --first.digits[i];
+        std::cout << first.digits[i] << '\n';
+      }
+      else {
+        int j = i;
+        while (first.digits[j] == 0) {
+          ++j;
+        }
+        for (int k = i; k < j; ++k) {
+          first.digits[k] = 9;
+        }
+        --first.digits[j];
+        //std::cout << first.digits[j] << std::endl;
+      }
     }
   }
   while (!first.digits.back())

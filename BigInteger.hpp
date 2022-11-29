@@ -46,10 +46,10 @@ public:
 	const bool operator == (const BigInteger& other) const;
 	bool operator >= (const BigInteger& other) const;
 	bool operator <= (const BigInteger& other) const;
-    operator bool() const;
-	
+    explicit operator bool() const;
+    explicit operator double () const;
 
-	// Utilities
+    // Utilities
 	std::string to_string() const;
 	std::size_t size() const;
 private:
