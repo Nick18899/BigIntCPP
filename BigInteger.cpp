@@ -181,8 +181,8 @@ void BigInteger::operator/=(const BigInteger &other) {
     *this =  BigInteger("0");
     return;
   }
-  if (cp == BigInteger(0)) {
-    *this = BigInteger(0);
+  if (cp == BigInteger("0")) {
+    *this = BigInteger("0");
     return;
   }
   bool sgn;
@@ -191,12 +191,14 @@ void BigInteger::operator/=(const BigInteger &other) {
   } else {
     sgn = false;
   }
-  BigInteger left(0);
+  BigInteger left("0");
   this->sign = false;
-  BigInteger right(*this + 1);
+  BigInteger right(*this);
+  right += 1;
   while (right - left > BigInteger(1)) {
-    BigInteger mid(left + right);
+    BigInteger mid = left + right;
     division_by_two(mid);
+    //std::cout << mid.to_string() << "strange" << std::endl;
     if (mid * cp == *this) {
       left = mid;
       break;
@@ -204,15 +206,22 @@ void BigInteger::operator/=(const BigInteger &other) {
     if (mid * cp > *this) {
       right = mid;
     } else {
+      if (right - left == BigInteger("1")) {
+        break;
+      }
+      //std::cout << ((right - left) == BigInteger("1")) << " " ;
       left = mid;
     }
   }
+  //std::cout << left.to_string() << "    ";
   *this = left;
   this->sign = sgn;
 }
 
 BigInteger BigInteger::operator%(const BigInteger &other) const {
-  BigInteger res = *this - (*this / other) * (*this);
+  BigInteger res = *this - (*this / other) * (other);
+  BigInteger b = (*this / other) * (other);
+  //std::cout << b.to_string() << '\n';
   if (res.sign) {
     res += other;
   }
@@ -267,21 +276,13 @@ void BigInteger::operator+=(const BigInteger& other)
   else
   {
     if (*this == -other) {
-      *this = BigInteger(0);
+      *this = BigInteger("0");
       return;
     }
     if (!(this->sign)) {
       if (other.size() > this->size() || *this < -other) {
         BigInteger cp(*this);
         *this = other;
-        for (int i = 0; i< cp.digits.size(); ++i) {
-          std::cout << cp.digits[i] << " ";
-        }
-        std::cout << "\n";
-        for (int i = 0; i< this->digits.size(); ++i) {
-          std::cout << this->digits[i] << " ";
-        }
-        std::cout << std::endl;
         substract_second_from_first(*this, cp);
         this->sign = true;
       }
@@ -322,7 +323,11 @@ bool BigInteger::compare_two_numbers(const std::vector<short>& first, const std:
   }
   else 
   {
-    for (int i=first.size(); i>=0; --i)
+    /*for (int i = 0; i < first.size(); ++i) {
+      std::cout << first[i] << " ";
+    }*/
+    //std::cout << std::endl;
+    for (int i=first.size() - 1; i>=0; --i)
     {
       if (first[i] != second[i])
       {
@@ -426,8 +431,10 @@ void BigInteger::substract_second_from_first(BigInteger& first, const BigInteger
   {
     flag = false;
     first.digits[i] -= (second.digits[i] + buff);
+    buff = 0;
     if (first.digits[i] < 0){
-      buff = first.digits[i] < 0 ? 1 : 0;
+      //buff = first.digits[i] < 0 ? 1 : 0;
+      buff = 1;
       first.digits[i] += 10;
       flag = true;
     }
@@ -435,7 +442,6 @@ void BigInteger::substract_second_from_first(BigInteger& first, const BigInteger
       ++i;
       if (first.digits[i] != 0) {
         --first.digits[i];
-        std::cout << first.digits[i] << '\n';
       }
       else {
         int j = i;
@@ -457,7 +463,7 @@ void BigInteger::substract_second_from_first(BigInteger& first, const BigInteger
 }
 
 void BigInteger::division_by_two(BigInteger &first) {
-  if (first == BigInteger(0)) {
+  if (first == BigInteger("0")) {
     return;
   }
   for (int i = 0; i < first.size(); ++i) {
