@@ -1,5 +1,8 @@
 #include <vector>
 #include <string>
+
+
+
 class BigInteger
 {
 	// digits storage in reversed order
@@ -53,10 +56,15 @@ public:
 	std::string to_string() const;
 	std::size_t size() const;
 private:
+  // literals
 	//Service methods
  	static void add_second_to_first(BigInteger& first, const BigInteger& second);
  	static void substract_second_from_first(BigInteger& first, const BigInteger& second);
 	static bool compare_two_numbers(const std::vector<short>& first, const std::vector<short>& second);
 	static bool compare_signs(const BigInteger& first, const BigInteger& second);
+    static void division_by_two(BigInteger& first);
 };
+
+BigInteger operator"" _bi(const char* s, size_t size);  // Literal operator for user-defined STRING literal
+
 
