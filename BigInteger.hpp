@@ -55,7 +55,8 @@ public:
     // Utilities
 	std::string to_string() const;
 	std::size_t size() const;
-private:
+    static BigInteger BinaryPow (BigInteger number, size_t n);
+ private:
   // literals
 	//Service methods
  	static void add_second_to_first(BigInteger& first, const BigInteger& second);

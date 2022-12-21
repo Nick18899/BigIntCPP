@@ -186,7 +186,7 @@ void BigInteger::operator/=(const BigInteger &other) {
     return;
   }
   bool sgn;
-  if (this->sign != cp.sign) {
+  if (this->sign != other.sign) {
     sgn = true;
   } else {
     sgn = false;
@@ -219,9 +219,25 @@ void BigInteger::operator/=(const BigInteger &other) {
 }
 
 BigInteger BigInteger::operator%(const BigInteger &other) const {
+  if (other.sign) {
+    if (this->sign) {
+      BigInteger res = -(*this) + (*this / other) * (other);
+      if (res == BigInteger("0")) {
+        return BigInteger("0");
+      }
+      return -other - res;
+    } else {
+      BigInteger res = (*this) - (*this / other) * (other);
+      if (res == BigInteger("0")) {
+        return BigInteger("0");
+      }
+      return res;
+    }
+  }
   BigInteger res = *this - (*this / other) * (other);
-  BigInteger b = (*this / other) * (other);
-  //std::cout << b.to_string() << '\n';
+  if (res == BigInteger("0")) {
+    return BigInteger("0");
+  }
   if (res.sign) {
     res += other;
   }
@@ -511,3 +527,135 @@ BigInteger operator "" _bi(const char* s, size_t size) {
   std::string s1 = s;
   return BigInteger(s1);
 }
+
+BigInteger BigInteger::BinaryPow (BigInteger number, size_t n) {
+  BigInteger result = BigInteger("1");
+  while(n) {
+    if (n & 1) {
+      result *= number;
+      --n;
+    } else {
+      number *= number;
+      n >>= 1;
+    }
+  }
+  return result;
+}
+// check what is wrong with this shit
+
+class Rational {
+  Rational(const BigInteger& bi) {
+    numerator = bi;
+    denominator = BigInteger("1");
+  }
+
+  Rational(int num) {
+    numerator = BigInteger(num);
+    denominator = BigInteger("1");
+  }
+
+  Rational(const BigInteger& bi, const BigInteger& bi2) {
+    numerator = bi;
+    denominator = bi2;
+  }
+
+  Rational(int num, int num2) {
+    numerator = BigInteger(num);
+    denominator = BigInteger(num2);
+  }
+
+  Rational() = default;
+
+  std::string toString() {
+    if (denominator == BigInteger("1")) {
+      return numerator.to_string();
+    } else {
+      return numerator.to_string() + "/" + denominator.to_string();
+    }
+  }
+
+  std::string asDecimal(size_t precision = 0) const {
+    std::string result = (numerator / denominator).to_string();
+    BigInteger ost = (numerator % denominator) * (BigInteger::BinaryPow(BigInteger("10"), precision));
+    ost /= denominator;
+    result += ("." + ost.to_string());
+    return result;
+  }
+
+  Rational operator - () const {
+    return -1 * *this;
+  }
+
+  Rational operator + () const {
+    return *this;
+  }
+
+  Rational& operator += (const Rational& a) {
+    *this = *this + a;
+    return *this;
+  }
+
+  Rational& operator -= (const Rational& a) {
+    *this = *this - a;
+    return *this;
+  }
+
+  Rational& operator *= (const Rational& a) {
+    *this = *this * a;
+    return *this;
+  }
+
+  Rational& operator /= (const Rational& a) {
+    *this = *this / a;
+    return *this;
+  }
+
+  friend Rational operator + (const Rational& a, const Rational&b) {
+    return Rational(a.numerator * b.denominator + b.numerator * a.denominator, a.denominator*b.denominator);
+  }
+
+  friend Rational operator - (const Rational& a, const Rational&b) {
+    return Rational(a.numerator * b.denominator - b.numerator * a.denominator, a.denominator * b.denominator);
+  }
+
+  friend Rational operator * (const Rational& a, const Rational&b) {
+    return Rational(a.numerator * b.numerator, a.denominator * b.denominator);
+  }
+
+  friend Rational operator / (const Rational& a, const Rational&b) {
+    return Rational(a.numerator * b.denominator, a.denominator*b.numerator);
+  }
+
+  friend bool operator < (const Rational& a, const Rational& b) {
+    Rational tmp = a / b;
+    return tmp.numerator < tmp.denominator;
+  }
+
+  friend bool operator > (const Rational& a, const Rational& b) {
+    return b < a;
+  }
+
+  friend bool operator >= (const Rational& a, const Rational& b) {
+    return !(a < b);
+  }
+
+  friend bool operator <= (const Rational& a, const Rational& b) {
+    return !(a > b);
+  }
+
+  friend bool operator == (const Rational& a, const Rational& b) {
+    return !(a < b) && !(a > b);
+  }
+
+  friend bool operator != (const Rational& a, const Rational& b) {
+    return !(a == b);
+  }
+
+  explicit operator double() const {
+    return std::stod(this->asDecimal(16));
+  }
+
+ private:
+  BigInteger numerator;
+  BigInteger denominator;
+};
